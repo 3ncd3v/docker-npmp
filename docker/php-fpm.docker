@@ -1,0 +1,21 @@
+FROM php:8-fpm
+
+RUN apt-get update && apt-get install -y libmcrypt-dev mariadb-client \
+    && docker-php-ext-install pdo_mysql
+
+RUN pecl install ds && docker-php-ext-enable ds
+
+RUN docker-php-ext-configure exif
+RUN docker-php-ext-install exif
+RUN docker-php-ext-enable exif
+
+COPY /docker/php/php.ini /usr/local/etc/php/
+
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+
+RUN pecl install xdebug \
+	&& docker-php-ext-enable xdebug
+
+COPY /docker/php/conf.d/* /usr/local/etc/php/conf.d
+
+WORKDIR /var/www
